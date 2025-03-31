@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@pinecone-database/pinecone": "^5.1.1",
+    "postchain-client": "^1.21.1"
+  }
+}

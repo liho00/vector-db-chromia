@@ -1,0 +1,35 @@
+Install CHR CLI
+https://docs.chromia.com/intro/getting-started/installation/cli-installation
+
+Install PMC CLI
+https://docs.chromia.com/providers/pmc/pmccli-installation
+
+https://docs.chromia.com/providers/nodes/provider-keypair
+pmc keygen --save .chromia/config will create a config file in working directory
+.chromia/config
+#Keypair generated using secp256k1
+#Mon Mar 31 11:05:29 UTC 2025
+privkey=******
+pubkey=******
+api.url=http://127.0.0.1:7740
+brid=1E24A0CE172597A714B644251912996C1016E805AE89671D2E9C6CF2B037711F
+
+https://gitlab.com/chromaway/core/vector-db-extension
+
+Run the docker
+docker run --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/directory1-example/managed-single:latest
+
+In the docker log retrieve privkey, pubkey, and replace in .chromia/config
+
+```
+# Build the demo dapp
+cd vector-db-extension/rell
+chr build
+
+# Add the demo dapp
+pmc blockchain add -bc vector-db-extension/rell/build/vector_example.xml -c dapp -n vector_blockchain
+
+# Get the blockchain rid - can be found manually from "pmc blockchains"
+vector_brid=$(pmc blockchains | jq -r '.[] | select(.Name == "vector_blockchain") | .Rid')
+```
+
