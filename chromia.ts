@@ -49,12 +49,12 @@ const documents = [document1, document2, document3, document4];
 //   console.error("Error adding documents:", error);
 // }
 
-// try {
-//   await vectorStore.delete({ ids: ["4"] });
-//   console.log("Documents deleted successfully");
-// } catch (error) {
-//   console.error("Error adding documents:", error);
-// }
+try {
+  await vectorStore.delete({ ids: ["The powerhouse of the cell is the mitochondria"] });
+  console.log("Documents deleted successfully");
+} catch (error) {
+  console.error("Error adding documents:", error);
+}
 
 const filter = { source: "https://example.com" };
 

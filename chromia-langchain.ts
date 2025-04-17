@@ -287,12 +287,16 @@ export class Chromia extends VectorStore {
   async delete(params: { ids: string[] | number[] }): Promise<void> {
     const { ids } = params;
 
-    const operation = {
-      name: "delete_messages",
-      args: [ids],
-    };
     try {
-      await this.client.sendTransaction(operation)
+      let tx: Transaction = {
+        operations: [{
+          name: "delete_messages",
+          args: [ids],
+        }],
+        signers: [],
+      }
+      tx = this.client.addNop(tx);
+      await this.client.sendTransaction(tx)
     } catch (e) {
       console.error("Error sending transaction:", e);
       throw new Error(
