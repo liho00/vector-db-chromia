@@ -1,6 +1,12 @@
 {
   "dependencies": {
+    "@huggingface/transformers": "^3.5.0",
+    "@langchain/community": "^0.3.41",
+    "@langchain/core": "^0.3.45",
+    "@langchain/openai": "^0.5.5",
     "@pinecone-database/pinecone": "^5.1.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "chromadb": "^2.2.1",
     "postchain-client": "^1.21.1"
   }
 }
