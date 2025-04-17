@@ -40,17 +40,22 @@ const document4: Document = {
   metadata: { source: "https://example.com" },
 };
 
-const documents = [document1, document2, document3, document4];
+const document5: Document = {
+  pageContent: "The 2025 Olympics are in Korea",
+  metadata: { source: "https://example.com" },
+};
+
+const documents = [document1, document2, document3, document4, document5];
 
 // try {
-//   await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
+//   await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4", "5"] });
 //   console.log("Documents added successfully");
 // } catch (error) {
 //   console.error("Error adding documents:", error);
 // }
 
 try {
-  await vectorStore.delete({ ids: ["The powerhouse of the cell is the mitochondria"] });
+  await vectorStore.delete({ ids: ["Mitochondria are made out of lipids"] });
   console.log("Documents deleted successfully");
 } catch (error) {
   console.error("Error adding documents:", error);
@@ -59,8 +64,8 @@ try {
 const filter = { source: "https://example.com" };
 
 const similaritySearchResults = await vectorStore.similaritySearch(
-  "biology",
-  2,
+  "Mitochondria are made out of lipids",
+  1,
   filter
 );
 console.log("Similarity search results:", similaritySearchResults);

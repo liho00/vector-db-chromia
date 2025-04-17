@@ -237,6 +237,7 @@ export class Chromia extends VectorStore {
     documents: Document[],
     options?: { ids?: string[] }
   ) {
+    // console.log("addVectors", vectors, documents, options);
     if (vectors.length === 0) {
       return [];
     }
@@ -253,29 +254,23 @@ export class Chromia extends VectorStore {
     }
     const documentIds =
       options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1());
-    const rows = vectors.map((embedding, idx) => ({
-      content: documents[idx].pageContent,
-      embedding,
-      metadata: documents[idx].metadata,
-    }));
-    let returnedIds: string[] = [];
-    for (let i = 0; i < rows.length; i++) {
-      const chunk = rows[i];
-      let tx: Transaction = {
-        operations: [{
-          name: "add_message",
-          args: [chunk.content, `[${chunk.embedding.slice(0, 3)}]`],
-        }],
-        signers: [],
-      }
-      tx = this.client.addNop(tx);
-      const res = await this.client.sendTransaction(tx)
-      if (res.transactionRid) {
-        returnedIds.push(Buffer.from(res.transactionRid).toString("hex"))
-      }
-    }
 
-    return returnedIds;
+    const rows = vectors.map((embedding, idx) => ([documents[idx].pageContent, `[${embedding.slice(0, 3)}]`]));
+    let tx: Transaction = {
+      operations: [{
+        name: "add_messages",
+        args: [rows],
+      }],
+      signers: [],
+    }
+    tx = this.client.addNop(tx);
+    const res = await this.client.sendTransaction(tx)
+    // console.log("res", res);
+    // if (res.transactionRid) {
+    //   returnedIds.push(Buffer.from(res.transactionRid).toString("hex"))
+    // }
+
+    return documentIds;
   }
 
   /**
@@ -319,13 +314,12 @@ export class Chromia extends VectorStore {
     k: number,
     filter?: this["FilterType"]
   ) {
-    // console.log("hangugug", query, k, filter);
     if (filter && this.filter) {
       throw new Error("cannot provide both `filter` and `this.filter`");
     }
     const _filter = filter ?? this.filter;
     const where = _filter === undefined ? undefined : { ..._filter };
-
+    console.log("where", where);
     // similaritySearchVectorWithScore supports one query vector at a time
     // chroma supports multiple query vectors at a time
     const searches = await this.client.query("query_closest_objects", {
@@ -337,9 +331,10 @@ export class Chromia extends VectorStore {
         // "type": "get_messages",
         "type": "get_messages_with_distance",
         // "type": "get_messages_with_filter",
-        // "args": { "text_filter": "j" }
+        // "args": { "text_filter": `Paris` }
       }
     }) as any;
+    console.log("searches", searches);
 
     const result: [Document, number][] = searches.map((resp) => [
       new Document({
