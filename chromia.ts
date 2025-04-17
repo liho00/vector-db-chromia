@@ -42,10 +42,29 @@ const document4: Document = {
 
 const documents = [document1, document2, document3, document4];
 
-try {
-  await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
-  console.log("Documents added successfully");
-} catch (error) {
-  console.error("Error adding documents:", error);
-}
+// try {
+//   await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
+//   console.log("Documents added successfully");
+// } catch (error) {
+//   console.error("Error adding documents:", error);
+// }
 
+// try {
+//   await vectorStore.delete({ ids: ["4"] });
+//   console.log("Documents deleted successfully");
+// } catch (error) {
+//   console.error("Error adding documents:", error);
+// }
+
+const filter = { source: "https://example.com" };
+
+const similaritySearchResults = await vectorStore.similaritySearch(
+  "biology",
+  2,
+  filter
+);
+console.log("Similarity search results:", similaritySearchResults);
+
+for (const doc of similaritySearchResults) {
+  console.log(`* ${doc.pageContent} [${JSON.stringify(doc.metadata, null)}]`);
+}

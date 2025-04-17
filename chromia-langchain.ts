@@ -288,7 +288,7 @@ export class Chromia extends VectorStore {
     const { ids } = params;
 
     const operation = {
-      name: "delete_message",
+      name: "delete_messages",
       args: [ids],
     };
     try {
@@ -315,62 +315,37 @@ export class Chromia extends VectorStore {
     k: number,
     filter?: this["FilterType"]
   ) {
+    // console.log("hangugug", query, k, filter);
     if (filter && this.filter) {
       throw new Error("cannot provide both `filter` and `this.filter`");
     }
     const _filter = filter ?? this.filter;
     const where = _filter === undefined ? undefined : { ..._filter };
 
-
     // similaritySearchVectorWithScore supports one query vector at a time
     // chroma supports multiple query vectors at a time
-    const result = await this.client.query("query_closest_objects", {
+    const searches = await this.client.query("query_closest_objects", {
       context: 0,
-      q_vector: `${query}`,
+      q_vector: `[${query.splice(0, 3)}]`,
       max_distance: "1.0",
       max_vectors: k,
+      query_template: {
+        // "type": "get_messages",
+        "type": "get_messages_with_distance",
+        // "type": "get_messages_with_filter",
+        // "args": { "text_filter": "j" }
+      }
     }) as any;
 
-    const { ids, distances, documents, metadatas } = result;
-    if (!ids || !distances || !documents || !metadatas) {
-      return [];
-    }
-    // get the result data from the first and only query vector
-    const [firstIds] = ids;
-    const [firstDistances] = distances;
-    const [firstDocuments] = documents;
-    const [firstMetadatas] = metadatas;
+    const result: [Document, number][] = searches.map((resp) => [
+      new Document({
+        metadata: resp.metadata,
+        pageContent: resp.text,
+      }),
+      resp.distance,
+    ]);
 
-
-    const results: [Document, number][] = [];
-    for (let i = 0; i < firstIds.length; i += 1) {
-      let metadata: Document["metadata"] = firstMetadatas?.[i] ?? {};
-
-      if (metadata.locFrom && metadata.locTo) {
-        metadata = {
-          ...metadata,
-          loc: {
-            lines: {
-              from: metadata.locFrom,
-              to: metadata.locTo,
-            },
-          },
-        };
-
-        delete metadata.locFrom;
-        delete metadata.locTo;
-      }
-
-      results.push([
-        new Document({
-          pageContent: firstDocuments?.[i] ?? "",
-          metadata,
-          id: firstIds[i],
-        }),
-        firstDistances[i],
-      ]);
-    }
-    return results;
+    return result;
   }
 
   /**
