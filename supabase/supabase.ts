@@ -1,4 +1,4 @@
-import { SupabaseVectorStore } from "./supabase-langchain";
+import { SupabaseVectorStore } from "./langchain";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
 import { createClient } from "@supabase/supabase-js";

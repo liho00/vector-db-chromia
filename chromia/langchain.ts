@@ -1,13 +1,5 @@
 import * as uuid from "uuid";
-import type {
-  // ChromaClient as ChromiaClientT,
-  Collection,
-  ChromaClientParams,
-  CollectionMetadata,
-  Where,
-} from "chromadb";
-// type CollectionMetadata = Record<string, boolean | number | string>;
-import { createClient, IClient as ChromiaClientT, NetworkSettings as ChromiaClientParams, Transaction } from "postchain-client";
+import { IClient as ChromiaClientT, NetworkSettings as ChromiaClientParams, Transaction } from "postchain-client";
 
 import type { EmbeddingsInterface } from "@langchain/core/embeddings";
 import { VectorStore } from "@langchain/core/vectorstores";
@@ -25,14 +17,8 @@ import { Document } from "@langchain/core/documents";
  */
 export interface ChromiaLibArgs {
   client: ChromiaClientT;
-  tableName?: string;
-  queryName?: string;
-  upsertBatchSize?: number;
   numDimensions?: number;
-  collectionName?: string;
   filter?: object;
-  collectionMetadata?: CollectionMetadata;
-  clientParams?: Omit<ChromiaClientParams, "path">;
 }
 
 /**
@@ -61,7 +47,7 @@ export interface ChromaDeleteParams<T> {
  * <summary><strong>Instantiate</strong></summary>
  *
  * ```typescript
- * import { Chromia } from '@langchain/community/vectorstores/chroma';
+ * import { Chromia } from '@langchain/community/vectorstores/chromia';
  * // Or other embeddings
  * import { OpenAIEmbeddings } from '@langchain/openai';
  *
@@ -172,15 +158,7 @@ export interface ChromaDeleteParams<T> {
  * <br />
  */
 export class Chromia extends VectorStore {
-  declare FilterType: Where;
-
   client: ChromiaClientT;
-
-  collection?: Collection;
-
-  collectionName: string;
-
-  collectionMetadata?: CollectionMetadata;
 
   numDimensions?: number;
 
@@ -188,10 +166,9 @@ export class Chromia extends VectorStore {
 
   filter?: object;
 
-  upsertBatchSize = 500;
 
   _vectorstoreType(): string {
-    return "chroma";
+    return "chromia";
   }
 
   constructor(embeddings: EmbeddingsInterface, args: ChromiaLibArgs) {
@@ -200,11 +177,8 @@ export class Chromia extends VectorStore {
     this.client = args.client;
     this.numDimensions = args.numDimensions;
     this.embeddings = embeddings;
-    this.collectionName = ensureCollectionName(args.collectionName);
-    this.collectionMetadata = args.collectionMetadata;
 
     this.filter = args.filter;
-    this.upsertBatchSize = args.upsertBatchSize ?? this.upsertBatchSize;
   }
 
   /**
@@ -237,7 +211,6 @@ export class Chromia extends VectorStore {
     documents: Document[],
     options?: { ids?: string[] }
   ) {
-    // console.log("addVectors", vectors, documents, options);
     if (vectors.length === 0) {
       return [];
     }
@@ -255,15 +228,14 @@ export class Chromia extends VectorStore {
     const documentIds =
       options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1());
 
-    const rows = vectors.map((embedding, idx) => ([documents[idx].pageContent, `[${embedding.slice(0, 3)}]`]));
-    let tx: Transaction = {
+    const rows = vectors.map((embedding, idx) => ([documents[idx].pageContent, `[${embedding}]`]));
+    const tx = this.client.addNop({
       operations: [{
         name: "add_messages",
         args: [rows],
       }],
       signers: [],
-    }
-    tx = this.client.addNop(tx);
+    });
     const res = await this.client.sendTransaction(tx)
     // console.log("res", res);
     // if (res.transactionRid) {
@@ -283,14 +255,13 @@ export class Chromia extends VectorStore {
     const { ids } = params;
 
     try {
-      let tx: Transaction = {
+      const tx = this.client.addNop({
         operations: [{
           name: "delete_messages",
           args: [ids],
         }],
         signers: [],
-      }
-      tx = this.client.addNop(tx);
+      });
       await this.client.sendTransaction(tx)
     } catch (e) {
       console.error("Error sending transaction:", e);
@@ -312,19 +283,18 @@ export class Chromia extends VectorStore {
   async similaritySearchVectorWithScore(
     query: number[],
     k: number,
-    filter?: this["FilterType"]
+    filter?: object
   ) {
     if (filter && this.filter) {
       throw new Error("cannot provide both `filter` and `this.filter`");
     }
     const _filter = filter ?? this.filter;
     const where = _filter === undefined ? undefined : { ..._filter };
-    console.log("where", where);
     // similaritySearchVectorWithScore supports one query vector at a time
-    // chroma supports multiple query vectors at a time
+    // chromia supports multiple query vectors at a time
     const searches = await this.client.query("query_closest_objects", {
       context: 0,
-      q_vector: `[${query.splice(0, 3)}]`,
+      q_vector: `[${query}]`,
       max_distance: "1.0",
       max_vectors: k,
       query_template: {
@@ -333,8 +303,11 @@ export class Chromia extends VectorStore {
         // "type": "get_messages_with_filter",
         // "args": { "text_filter": `Paris` }
       }
-    }) as any;
-    console.log("searches", searches);
+    }) as {
+      text: string;
+      metadata: object;
+      distance: number;
+    }[];
 
     const result: [Document, number][] = searches.map((resp) => [
       new Document({
@@ -421,14 +394,4 @@ export class Chromia extends VectorStore {
       );
     }
   }
-}
-
-/**
- * Generates a unique collection name if none is provided.
- */
-function ensureCollectionName(collectionName?: string) {
-  if (!collectionName) {
-    return `langchain-${uuid.v4()}`;
-  }
-  return collectionName;
 }

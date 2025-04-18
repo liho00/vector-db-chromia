@@ -1,6 +1,8 @@
 import { createClient, } from "postchain-client";
-import { Chromia } from "./chromia-langchain";
+import { Chromia } from "./langchain";
 import { OpenAIEmbeddings } from "@langchain/openai";
+import type { Document } from "@langchain/core/documents";
+
 const embeddings = new OpenAIEmbeddings({
   model: "text-embedding-3-small",
 });
@@ -16,9 +18,8 @@ const postchainClient = await createClient({
 
 const vectorStore = new Chromia(embeddings, {
   client: postchainClient,
+  numDimensions: 3,
 });
-
-import type { Document } from "@langchain/core/documents";
 
 const document1: Document = {
   pageContent: "The powerhouse of the cell is the mitochondria",
@@ -40,31 +41,26 @@ const document4: Document = {
   metadata: { source: "https://example.com" },
 };
 
-const document5: Document = {
-  pageContent: "The 2025 Olympics are in Korea",
-  metadata: { source: "https://example.com" },
-};
-
-const documents = [document1, document2, document3, document4, document5];
-
-// try {
-//   await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4", "5"] });
-//   console.log("Documents added successfully");
-// } catch (error) {
-//   console.error("Error adding documents:", error);
-// }
+const documents = [document1, document2, document3, document4];
 
 try {
-  await vectorStore.delete({ ids: ["Mitochondria are made out of lipids"] });
-  console.log("Documents deleted successfully");
+  await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
+  console.log("Documents added successfully");
 } catch (error) {
   console.error("Error adding documents:", error);
 }
 
+// try {
+//   await vectorStore.delete({ ids: ["Mitochondria are made out of lipids"] });
+//   console.log("Documents deleted successfully");
+// } catch (error) {
+//   console.error("Error adding documents:", error);
+// }
+
 const filter = { source: "https://example.com" };
 
 const similaritySearchResults = await vectorStore.similaritySearch(
-  "Mitochondria are made out of lipids",
+  "where is omlympics?",
   1,
   filter
 );

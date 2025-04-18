@@ -1,5 +1,5 @@
 // import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { Chroma } from "./chroma-langchain";
+import { Chroma } from "./langchain";
 import { OpenAIEmbeddings } from "@langchain/openai";
 const embeddings = new OpenAIEmbeddings({
   model: "text-embedding-3-small",
