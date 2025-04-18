@@ -50,12 +50,12 @@ try {
   console.error("Error adding documents:", error);
 }
 
-// try {
-//   await vectorStore.delete({ ids: ["Mitochondria are made out of lipids"] });
-//   console.log("Documents deleted successfully");
-// } catch (error) {
-//   console.error("Error adding documents:", error);
-// }
+try {
+  await vectorStore.delete({ ids: ["The 2024 Olympics are in Paris"] });
+  console.log("Documents deleted successfully");
+} catch (error) {
+  console.error("Error adding documents:", error);
+}
 
 const filter = { source: "https://example.com" };
 

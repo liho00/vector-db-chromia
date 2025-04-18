@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { IClient as ChromiaClientT, NetworkSettings as ChromiaClientParams, Transaction } from "postchain-client";
+import { IClient as ChromiaClientT } from "postchain-client";
 
 import type { EmbeddingsInterface } from "@langchain/core/embeddings";
 import { VectorStore } from "@langchain/core/vectorstores";
@@ -26,7 +26,7 @@ export interface ChromiaLibArgs {
  * It can either contain an array of `ids` of the documents to be deleted
  * or a `filter` object to specify the documents to be deleted.
  */
-export interface ChromaDeleteParams<T> {
+export interface ChromiaDeleteParams<T> {
   ids?: string[];
   filter?: T;
 }
@@ -35,13 +35,13 @@ export interface ChromaDeleteParams<T> {
  * Chromia vector store integration.
  *
  * Setup:
- * Install `@langchain/community` and `chromadb`.
+ * Install `@langchain/community` and `postchain-client`.
  *
  * ```bash
- * npm install @langchain/community chromadb
+ * npm install @langchain/community postchain-client
  * ```
  *
- * ## [Constructor args](https://api.js.langchain.com/classes/langchain_community_vectorstores_chroma.Chromia.html#constructor)
+ * ## [Constructor args](https://api.js.langchain.com/classes/langchain_community_vectorstores_chromia.Chromia.html#constructor)
  *
  * <details open>
  * <summary><strong>Instantiate</strong></summary>
@@ -58,8 +58,8 @@ export interface ChromaDeleteParams<T> {
  * const vectorStore = new Chromia(
  *   embeddings,
  *   {
- *     collectionName: "foo",
- *     url: "http://localhost:7740", // URL of the Chromia server
+ *     client: postchainClient, // Chromia postchain client
+ *     numDimensions: embeddings.dimensions, // Number of dimensions for the vectors
  *   }
  * );
  * ```
