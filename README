@@ -1,58 +1,113 @@
-Install CHR CLI
-https://docs.chromia.com/intro/getting-started/installation/cli-installation
+# 🧠 Chromia Vector DB Demo Setup
 
-Install PMC CLI
-https://docs.chromia.com/providers/pmc/pmccli-installation
+This guide outlines how to set up and interact with Chromia's Vector DB using the CHR CLI and PMC CLI, and offers a brief comparison with Pinecone's vector database.
 
-https://docs.chromia.com/providers/nodes/provider-keypair
-pmc keygen --save .chromia/config will create a config file in working directory
-.chromia/config
+---
+
+## 📦 Prerequisites
+
+- Docker
+- Java (for CHR CLI)
+- [jq](https://stedolan.github.io/jq/) (for processing JSON in bash)
+- Git
+
+---
+
+## ⚙️ Installation
+
+### 1. Install CHR CLI
+
+Follow the official Chromia instructions:  
+👉 [CHR CLI Installation Guide](https://docs.chromia.com/intro/getting-started/installation/cli-installation)
+
+### 2. Install PMC CLI
+
+👉 [PMC CLI Installation Guide](https://docs.chromia.com/providers/pmc/pmccli-installation)
+
+---
+
+## 🔑 Generate Keys & Config
+
+Generate a keypair and save config in the current directory:
+
+```bash
+pmc keygen --save .chromia/config
+```
+
+This creates a `.chromia/config` file with content similar to:
+
+```properties
 #Keypair generated using secp256k1
 #Mon Mar 31 11:05:29 UTC 2025
 privkey=******
 pubkey=******
 api.url=http://127.0.0.1:7740
-brid=1E24A0CE172597A714B644251912996C1016E805AE89671D2E9C6CF2B037711F
-
-https://gitlab.com/chromaway/core/vector-db-extension
-
-Run the docker
-docker run --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/directory1-example/managed-single:latest
-
-In the docker log retrieve privkey, pubkey, and replace in .chromia/config
-
+brid=YOUR_BLOCKCHAIN_RID
 ```
-# Build the demo dapp
+
+---
+
+## 🐳 Run the Vector DB Docker
+
+```bash
+docker run --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/directory1-example/managed-single:latest
+```
+
+📌 Once running, copy the `privkey`, `pubkey`, and `brid` from the container logs and replace them in `.chromia/config`.
+
+---
+
+## 📐 Deploy the Vector DB Demo DApp
+
+Clone the project:
+
+```bash
+git clone https://gitlab.com/chromaway/core/vector-db-extension.git
 cd vector-db-extension/rell
+```
+
+Build the DApp:
+
+```bash
 chr build
+```
 
-# Add the demo dapp
-pmc blockchain add -bc vector-db-extension/rell/build/vector_example.xml -c dapp -n vector_blockchain
+Add it to your blockchain:
 
-# Get the blockchain rid - can be found manually from "pmc blockchains"
+```bash
+pmc blockchain add -bc build/vector_example.xml -c dapp -n vector_blockchain
+```
+
+Get the blockchain RID:
+
+```bash
 vector_brid=$(pmc blockchains | jq -r '.[] | select(.Name == "vector_blockchain") | .Rid')
 ```
 
-# Feedbacks
-Feedback on Using Chromia Vector DB and Pinecone
+---
 
-Below is a summary of my observations regarding the use of Chromia Vector DB and Pinecone:
+## 📝 Notes & Observations
 
-Pinecone
+### Pinecone
 
-Got a solid ecosystem—can create custom indexes and namespaces.
+✅ Strong ecosystem with index + namespace flexibility  
+✅ Custom datatypes in vectors  
+✅ Easy SDK and API key integration  
+✅ Intuitive UI for data exploration  
 
-UI is very user-friendly, making it easy to manage.
+### Chromia Vector DB
 
-API key integration with the SDK works seamlessly, making vector DB usage quite smooth.
+🟡 Each vector DB requires a new DApp contract (unlike Pinecone’s index/namespace model)  
+🟡 No explicit support for namespaces (needs confirmation)  
+🟡 All values sent via Postchain SDK must be **stringified**  
+✅ Unique approach via smart contracts  
+✅ On-chain logic customizability
 
-Chromia Vector DB
+---
 
-Need to create a new contract for each vector DB, corresponding to Pinecone’s index dimensions.
+## 📚 Resources
 
-Seems like it doesn’t support namespaces (need to confirm).
-
-All values passed through Postchain SDK must be in string format, whereas Pinecone allows custom datatypes in an array.
-
-Overall, Pinecone feels more flexible, but Chromia has its own way of handling things. Let me know if need to check further!
+- [Chromia Vector DB Extension (GitLab)](https://gitlab.com/chromaway/core/vector-db-extension)
+- [Chromia Docs](https://docs.chromia.com/)
+- [Pinecone Docs](https://docs.pinecone.io/)
 
