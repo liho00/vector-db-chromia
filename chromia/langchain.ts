@@ -228,7 +228,17 @@ export class Chromia extends VectorStore {
     const documentIds =
       options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1());
 
-    const rows = vectors.map((embedding, idx) => ([documents[idx].pageContent, `[${embedding}]`]));
+    const rows = vectors.map((embedding, idx) => {
+      const id = documentIds[idx];
+      const metadata = documents[idx].metadata || {};
+      return [
+        JSON.stringify({
+          id,
+          content: documents[idx].pageContent,
+          metadata
+        }),
+        `[${embedding}]`]
+    });
     const tx = this.client.addNop({
       operations: [{
         name: "add_messages",
@@ -236,11 +246,7 @@ export class Chromia extends VectorStore {
       }],
       signers: [],
     });
-    const res = await this.client.sendTransaction(tx)
-    // console.log("res", res);
-    // if (res.transactionRid) {
-    //   returnedIds.push(Buffer.from(res.transactionRid).toString("hex"))
-    // }
+    await this.client.sendTransaction(tx)
 
     return documentIds;
   }
@@ -285,11 +291,12 @@ export class Chromia extends VectorStore {
     k: number,
     filter?: object
   ) {
-    if (filter && this.filter) {
-      throw new Error("cannot provide both `filter` and `this.filter`");
-    }
-    const _filter = filter ?? this.filter;
-    const where = _filter === undefined ? undefined : { ..._filter };
+    // filter is not supported yet
+    // if (filter && this.filter) {
+    //   throw new Error("cannot provide both `filter` and `this.filter`");
+    // }
+    // const _filter = filter ?? this.filter;
+    // const where = _filter === undefined ? undefined : { ..._filter };
     // similaritySearchVectorWithScore supports one query vector at a time
     // chromia supports multiple query vectors at a time
     const searches = await this.client.query("query_closest_objects", {
@@ -305,17 +312,28 @@ export class Chromia extends VectorStore {
       }
     }) as {
       text: string;
-      metadata: object;
       distance: number;
     }[];
 
-    const result: [Document, number][] = searches.map((resp) => [
-      new Document({
-        metadata: resp.metadata,
-        pageContent: resp.text,
-      }),
-      resp.distance,
-    ]);
+    const result: [Document, number][] = searches.map((resp) => {
+      let parsed: any;
+
+      try {
+        parsed = JSON.parse(resp.text); // Expecting format: { id, content, metadata }
+      } catch (e) {
+        console.warn("Failed to parse vector response text:", resp.text);
+        parsed = { content: resp.text, metadata: {} };
+      }
+
+      return [
+        new Document({
+          id: parsed.id,
+          pageContent: parsed.content || parsed.text || "",
+          metadata: parsed.metadata || {},
+        }),
+        resp.distance
+      ];
+    });
 
     return result;
   }
