@@ -13,12 +13,12 @@ const postchainClient = await createClient({
   ],
   merkleHashVersion: 1,
   directoryChainRid: "D7A4F6E3C2B9E1A5F7B4D6F7C8F0A4E6B2C3D4E5F6A7B8C9D0E1F2G3H4I5J6K7",
-  blockchainRid: "24779C88CC7967CE4111C04931217329648A7989B016F13C006E021D86DBE934",
+  blockchainRid: "3CECC4923F448F3B700A42C0C9FE012D0A90A86C3E786DCC68F81065068C32D2",
 })
 
 const vectorStore = new Chromia(embeddings, {
   client: postchainClient,
-  numDimensions: 3,
+  numDimensions: embeddings.dimensions,
 });
 
 const document1: Document = {
