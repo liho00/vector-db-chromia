@@ -43,12 +43,12 @@ const document4: Document = {
 
 const documents = [document1, document2, document3, document4];
 
-// try {
-//   await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
-//   console.log("Documents added successfully");
-// } catch (error) {
-//   console.error("Error adding documents:", error);
-// }
+try {
+  await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
+  console.log("Documents added successfully");
+} catch (error) {
+  console.error("Error adding documents:", error);
+}
 
 try {
   await vectorStore.delete({ ids: ["4"] });
