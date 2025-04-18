@@ -260,21 +260,14 @@ export class Chromia extends VectorStore {
   async delete(params: { ids: string[] | number[] }): Promise<void> {
     const { ids } = params;
 
-    try {
-      const tx = this.client.addNop({
-        operations: [{
-          name: "delete_messages",
-          args: [ids],
-        }],
-        signers: [],
-      });
-      await this.client.sendTransaction(tx)
-    } catch (e) {
-      console.error("Error sending transaction:", e);
-      throw new Error(
-        `Error deleting: ${e.message} ${e.status} ${e.statusText}`
-      );
-    }
+    const tx = this.client.addNop({
+      operations: [{
+        name: "delete_messages",
+        args: [ids],
+      }],
+      signers: [],
+    });
+    await this.client.sendTransaction(tx)
   }
 
   /**
@@ -292,9 +285,9 @@ export class Chromia extends VectorStore {
     filter?: object
   ) {
     // filter is not supported yet
-    // if (filter && this.filter) {
-    //   throw new Error("cannot provide both `filter` and `this.filter`");
-    // }
+    if (filter && this.filter) {
+      throw new Error("cannot provide both `filter` and `this.filter`");
+    }
     // const _filter = filter ?? this.filter;
     // const where = _filter === undefined ? undefined : { ..._filter };
     // similaritySearchVectorWithScore supports one query vector at a time

@@ -7,13 +7,23 @@ const embeddings = new OpenAIEmbeddings({
   model: "text-embedding-3-small",
 });
 
+const nodeUrlPool = process.env.NODE_URL_POOL;
+if (!nodeUrlPool) throw new Error(`Expected env var NODE_URL_POOL`);
+
+const merkleHashVersion = process.env.MERKLE_HASH_VERSION;
+if (!merkleHashVersion) throw new Error(`Expected env var MERKLE_HASH_VERSION`);
+
+const directoryChainRid = process.env.DIRECTORY_CHAIN_RID;
+if (!directoryChainRid) throw new Error(`Expected env var DIRECTORY_CHAIN_RID`);
+
+const blockchainRid = process.env.BLOCKCHAIN_RID;
+if (!blockchainRid) throw new Error(`Expected env var BLOCKCHAIN_RID`);
+
 const postchainClient = await createClient({
-  nodeUrlPool: [
-    "http://149.36.1.103:7740",
-  ],
-  merkleHashVersion: 1,
-  directoryChainRid: "D7A4F6E3C2B9E1A5F7B4D6F7C8F0A4E6B2C3D4E5F6A7B8C9D0E1F2G3H4I5J6K7",
-  blockchainRid: "3CECC4923F448F3B700A42C0C9FE012D0A90A86C3E786DCC68F81065068C32D2",
+  nodeUrlPool: nodeUrlPool,
+  merkleHashVersion: Number(merkleHashVersion),
+  directoryChainRid: directoryChainRid,
+  blockchainRid: blockchainRid,
 })
 
 const vectorStore = new Chromia(embeddings, {
