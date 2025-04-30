@@ -26,9 +26,12 @@ const postchainClient = await createClient({
   blockchainRid: blockchainRid,
 })
 
+const result = await embeddings.embedQuery("size");
+console.log("Embedding dimensions:", result.length);
+
 const vectorStore = new Chromia(embeddings, {
   client: postchainClient,
-  numDimensions: embeddings.dimensions,
+  numDimensions: result.length,
 });
 
 const document1: Document = {
@@ -61,7 +64,7 @@ try {
 }
 
 try {
-  await vectorStore.delete({ ids: ["4"] });
+  await vectorStore.delete({ ids: [2] });
   console.log("Documents deleted successfully");
 } catch (error) {
   console.error("Error adding documents:", error);
