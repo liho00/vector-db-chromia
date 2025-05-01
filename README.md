@@ -62,8 +62,8 @@ docker run --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/
 Clone the project:
 
 ```bash
-git clone https://gitlab.com/chromaway/core/vector-db-extension.git
-cd vector-db-extension/rell
+git clone https://github.com/liho00/vector-db-chromia.git
+cd vector-db-chromia/chromia/rell
 ```
 
 Build the DApp:
