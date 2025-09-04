@@ -50,7 +50,8 @@ brid=YOUR_BLOCKCHAIN_RID
 ## 🐳 Run the Vector DB Docker
 
 ```bash
-docker run --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/directory1-example/managed-single:latest
+docker run -d --rm -it -p 7740:7740 registry.gitlab.com/chromaway/example-projects/directory1-example/managed-single:latest
+docker logs -f <container id>
 ```
 
 📌 Once running, copy the `privkey`, `pubkey`, and `brid` from the container logs and replace them in `.chromia/config`.
